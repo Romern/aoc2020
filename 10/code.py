@@ -1,4 +1,6 @@
 import sys
+import time
+
 data = open(sys.argv[1]).read().split("\n")
 if data[-1] == "":
 	data = data[:-1]
@@ -28,45 +30,23 @@ def part1():
 print("Part 1 results:")
 part1()
 
-
-total_arrangements = 0
-
-amount_of_paths = dict()
-
-# graph is a DAG, topological sort is given, count the paths backwards
-def part2():
-	global data
-	import networkx as nx
-	data = [0] + data + [max(data) + 3]
-	G = nx.DiGraph()
-	G.add_edges_from([(i,j) for c,i in enumerate(data[:-1]) for j in data[c+1:] if j <= i + 3 and j > i])
-	amount_of_paths[data[-1]] = 1
-	print(count_paths(G, data[0], data[-1]))
-
 # counts the amount of path from cur to target in a DAG (why isnt this in networkx?)
-def count_paths(G, cur, target):
+def count_paths(cur, data, amount_of_paths):
 	if cur in amount_of_paths:
 		return amount_of_paths[cur]
 	total = 0
-	for i in G.successors(cur):
-		total += count_paths(G, i, target)
+	for i in range(cur+1,len(data)):
+		if data[i] > data[cur] + 3:
+			break
+		total += count_paths(i, data, amount_of_paths)
 	amount_of_paths[cur] = total
 	return total
 
-part2()
-"""
-def part2():
-	global data
-	import networkx as nx
-	data = [0] + data + [max(data) + 3]
-	G = nx.DiGraph()
-	G.add_edges_from([(i,j) for c,i in enumerate(data[:-1]) for j in data[c+1:] if j <= i + 3 and j > i])
-	total = 0
-	for path in nx.all_simple_paths(G, source=data[0], target=data[-1]):
-		total += 1
-	print(total)
-# build graph where each node has a neighbor if it in range 0,+3
-# get all pathes starting in node 0
-# ultra inefficient
-part2()
-"""
+start_time = time.time()
+
+data = [0] + data + [data[-1] + 3]
+res = count_paths(0, data, {len(data)-1 : 1})
+
+end_time = time.time()
+
+print(f"Part 2 result: {res}. Total time: {end_time-start_time} seconds")
